@@ -14,12 +14,13 @@ def round_robin(processes, quantum, run_for):
     completion_times = {}
     current_time = 0
     queue = []
-    while current_time < run_for or queue:
-        # Check for arriving processes
+    while current_time < run_for: # had to remove  or queue or processes
+        # Move processes from the original list to the queue as their arrival times are reached
         for process in processes:
             if process.arrival_time == current_time:
                 print(f"Time {current_time}: {process.name} Arrived")
                 queue.append(process)
+                processes.remove(process)
 
         if queue:
             current_process = queue.pop(0)
@@ -31,25 +32,27 @@ def round_robin(processes, quantum, run_for):
             current_process.remaining_time -= burst_time
             for _ in range(burst_time):
                 current_time += 1
-                # Check for arriving processes during the execution of the current process
+                # Move processes from the original list to the queue as their arrival times are reached
                 for process in processes:
                     if process.arrival_time == current_time:
                         print(f"Time {current_time}: {process.name} Arrived")
                         queue.append(process)
+                        processes.remove(process)
             if current_process.remaining_time == 0:
                 print(f"Time {current_time}: {current_process.name} Finished")
                 current_process.status = "Finished"
                 completion_times[current_process.name] = current_time
-            else:
+            elif queue: # Human changed from else to elif queue:
                 print(f"Time {current_time}: {current_process.name} Waiting")
                 current_process.status = "Waiting"
+                queue.append(current_process)
+            else: # Human added this entire else statement
                 queue.append(current_process)
         else:
             print(f"Time {current_time}: Idle")
             current_time += 1
 
     return first_execution_times, completion_times
-
 
 def calculate_metrics(processes, completion_times, first_execution_times):
     output = ""
@@ -65,18 +68,12 @@ def calculate_metrics(processes, completion_times, first_execution_times):
 
     return output
 
-
-
-# TODO: There is an issue with quantum 1, can double print arrivals
-
-
 # Example usage:
 if __name__ == "__main__":
-    processes = [Process("A", 0, 7), Process("B", 1, 4)]
-    quantum = 3
+    processes = [Process("A", 0, 7), Process("B", 1, 4), Process("C", 2, 3)]
+    quantum = 1
     run_for = 20
 
     print("Example Output:")
-    first_execution_times, completion_times = round_robin(processes, quantum, run_for)
+    first_execution_times, completion_times = round_robin(processes.copy(), quantum, run_for)
     print(calculate_metrics(processes, completion_times, first_execution_times))
-
