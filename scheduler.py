@@ -11,14 +11,13 @@ class Process:
     def __str__(self):
         return f"Process '{self.name}' | Arrival Time: {self.arrival_time} | Execution Time: {self.execution_time} | Status: {self.status}"
 
-def fcfs(processes):
+def fcfs(processes, run_for):
     pass
 
-def sjf(processes):
+def sjf(processes, run_for):
     pass
 
-
-def rr(processes, quantum, run_for):
+def round_robin(processes, quantum, run_for):
     first_execution_times = {}
     completion_times = {}
     current_time = 0
@@ -35,7 +34,7 @@ def rr(processes, quantum, run_for):
             current_process = queue.pop(0)
             if current_process.name not in first_execution_times:
                 first_execution_times[current_process.name] = current_time
-            print(f"Time {current_time}: {current_process.name} Selected (Burst {min(quantum, current_process.remaining_time)})")
+            print(f"Time {current_time}: {current_process.name} Selected (burst {current_process.remaining_time})") # Changed from Burst{min(quantum, current_process.remaining_time)} by human
             current_process.status = "Running"
             burst_time = min(quantum, current_process.remaining_time)
             current_process.remaining_time -= burst_time
@@ -52,7 +51,7 @@ def rr(processes, quantum, run_for):
                 current_process.status = "Finished"
                 completion_times[current_process.name] = current_time
             elif queue: # Human changed from else to elif queue:
-                print(f"Time {current_time}: {current_process.name} Waiting")
+                #print(f"Time {current_time}: {current_process.name} Waiting") Commented out by Human
                 current_process.status = "Waiting"
                 queue.append(current_process)
             else: # Human added this entire else statement
@@ -62,6 +61,11 @@ def rr(processes, quantum, run_for):
             current_time += 1
 
     return first_execution_times, completion_times
+
+def rr(processes, quantum, run_for):
+    first_execution_times, completion_times = round_robin(processes, quantum, run_for)
+    output = calculate_metrics(processes, completion_times, first_execution_times)
+    return output
 
 def calculate_metrics(processes, completion_times, first_execution_times):
     output = ""
@@ -75,8 +79,7 @@ def calculate_metrics(processes, completion_times, first_execution_times):
         
         output += f"{process.name} wait ({wait_time}) turnaround ({turnaround_time}) response ({response_time})\n"
 
-    return print(output)
-
+    return output
 
 def parse_input(input_file):
     processes = []
@@ -108,9 +111,8 @@ def write_output(output_file, data):
         if data['scheduling_algorithm'] == 'rr':
             file.write(f"Quantum: {data['quantum']}\n")
         file.write("\nProcesses:\n")
-        for process, info in data.items():
-            if isinstance(info, dict) and 'arrival' in info and 'burst' in info:
-                file.write(f"Name: {process[6:]}, Arrival Time: {info['arrival']}, Burst Time: {info['burst']}\n")
+        for process in data['processes']:
+            file.write(str(process) + "\n")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -122,14 +124,17 @@ if __name__ == "__main__":
 
     data = parse_input(input_file)
     scheduling_algorithm = data['scheduling_algorithm']
+    run_for = data['run_for']
     processes = data['processes']
 
     if scheduling_algorithm == 'fcfs':
-        fcfs(processes)
+        fcfs(processes, run_for)
     elif scheduling_algorithm == 'sjf':
-        sjf(processes)
+        sjf(processes, run_for)
     elif scheduling_algorithm == 'rr':
         quantum = data['quantum']
-        rr(processes, quantum, data['run_for'])
+        output = rr(processes, quantum, run_for)
+        print(output)
 
     write_output(output_file, data)
+
