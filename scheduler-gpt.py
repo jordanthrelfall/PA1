@@ -117,7 +117,6 @@ def round_robin(processes, quantum, run_for, output_file):
     calculate_metrics(processCopy, completion_times, first_execution_times, output_file)
 
 
-
 def rr(processes, quantum, run_for, output_file):
     round_robin(processes, quantum, run_for, output_file)
 
@@ -157,17 +156,6 @@ def parse_input(input_file):
                     data['quantum'] = int(file.readline().strip().split()[1])
     data['processes'] = processes
     return data
-
-def write_output(output_file, data):
-    with open(output_file, 'a') as file:
-        file.write(f"Process Count: {data['process_count']}\n")
-        file.write(f"Run For: {data['run_for']} time units\n")
-        file.write(f"Using Scheduling Algorithm: {data['scheduling_algorithm']}\n")
-        if data['scheduling_algorithm'] == 'rr':
-            file.write(f"Quantum: {data['quantum']}\n")
-        file.write("\nProcesses:\n")
-        for process in data['processes']:
-            file.write(str(process) + "\n")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
