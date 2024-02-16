@@ -82,9 +82,9 @@ def sjf(processes, run_for, output_file):
                     processes.remove(process)
 
             if queue:
-                queue.sort(key=lambda x: x.execution_time)
+                queue.sort(key=lambda x: x.remaining_time)
                 current_process = queue.pop(0)
-                burst_time = min(current_process.execution_time, run_for - current_time)
+                burst_time = min(current_process.remaining_time, run_for - current_time)
                 
                 if last_name != current_process.name:                
                     file.write(f"Time {current_time:3} : {current_process.name} selected (burst {burst_time})\n")
@@ -98,7 +98,7 @@ def sjf(processes, run_for, output_file):
                     current_time += 1
                     burst_time -= 1
                     last_name = current_process.name
-                    current_process.execution_time -= 1
+                    current_process.remaining_time -= 1
 
                     for process in processes[:]:
                         if process.arrival_time == current_time:
@@ -106,7 +106,7 @@ def sjf(processes, run_for, output_file):
                             queue.append(process)
                             processes.remove(process)
 
-                if current_process.execution_time == 0:
+                if current_process.remaining_time == 0:
                     file.write(f"Time {current_time:3} : {current_process.name} finished\n")
                     current_process.turnaround_time = current_time - current_process.arrival_time
                     completed_processes.append(current_process)
@@ -125,8 +125,8 @@ def sjf(processes, run_for, output_file):
 
 
 
-        # Call calculate_metrics function with collected data
-        calculate_metrics(hold_processes, completion_times, first_execution_times, output_file)
+    # Call calculate_metrics function with collected data
+    calculate_metrics(hold_processes, completion_times, first_execution_times, output_file) # Indented one less by human
 
 
 def round_robin(processes, quantum, run_for, output_file):
@@ -189,10 +189,6 @@ def rr(processes, quantum, run_for, output_file):
 def calculate_metrics(processes, completion_times, first_execution_times, output_file):
     with open(output_file, 'a') as file:
         
-        # print(processes)
-        # print(completion_times)
-        # print(first_execution_times)
-        print(output_file)
         for process in processes:
             completion_time = completion_times[process.name]
             first_execution_time = first_execution_times[process.name]
