@@ -1,3 +1,4 @@
+
 import sys
 
 class Process:
@@ -68,7 +69,7 @@ def sjf(processes, run_for, output_file):
 
     with open(output_file, "w") as file:
         file.write(f"{len(processes)} processes\n")
-        file.write("Using SJF\n")
+        file.write("Using preemptive Shortest Job First\n")
 
         while run_for > current_time: #human touched this
             for process in processes[:]:
@@ -89,7 +90,7 @@ def sjf(processes, run_for, output_file):
 
                 current_process.response_time = max(0, current_time - current_process.arrival_time)
 
-                while burst_time > 0:
+                if burst_time > 0:
                     current_time += 1
                     burst_time -= 1
                     current_process.execution_time -= 1
