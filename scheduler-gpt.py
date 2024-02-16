@@ -64,14 +64,17 @@ def fifo(processes, run_for, output_file):
 def sjf(processes, run_for, output_file):
     current_time = 0
     queue = []
-    processes = processes.copy()
+    hold_processes = processes.copy()
     completed_processes = []
+    last_name = ""
+    completion_times = {}  # Store completion times
+    first_execution_times = {}  # Store first execution times
 
     with open(output_file, "w") as file:
         file.write(f"{len(processes)} processes\n")
         file.write("Using preemptive Shortest Job First\n")
 
-        while run_for > current_time: #human touched this
+        while run_for > current_time:
             for process in processes[:]:
                 if process.arrival_time <= current_time:
                     file.write(f"Time {current_time:3} : {process.name} arrived\n")
@@ -79,26 +82,27 @@ def sjf(processes, run_for, output_file):
                     processes.remove(process)
 
             if queue:
-                # Sort queue based on execution time
                 queue.sort(key=lambda x: x.execution_time)
                 current_process = queue.pop(0)
-                
-                # Calculate burst time based on execution time
                 burst_time = min(current_process.execution_time, run_for - current_time)
                 
-                file.write(f"Time {current_time:3} : {current_process.name} selected (burst {burst_time})\n")
+                if last_name != current_process.name:                
+                    file.write(f"Time {current_time:3} : {current_process.name} selected (burst {burst_time})\n")
+                    # Record the first execution time
+                    if current_process.name not in first_execution_times:
+                        first_execution_times[current_process.name] = current_time
 
                 current_process.response_time = max(0, current_time - current_process.arrival_time)
 
                 if burst_time > 0:
                     current_time += 1
                     burst_time -= 1
+                    last_name = current_process.name
                     current_process.execution_time -= 1
 
-                    # Check for arrivals during the execution of the process
                     for process in processes[:]:
                         if process.arrival_time == current_time:
-                            file.write(f"Time {current_time:3} : {process.name} arrived while {current_process.name} is running\n")
+                            file.write(f"Time {current_time:3} : {process.name} arrived\n")
                             queue.append(process)
                             processes.remove(process)
 
@@ -106,6 +110,8 @@ def sjf(processes, run_for, output_file):
                     file.write(f"Time {current_time:3} : {current_process.name} finished\n")
                     current_process.turnaround_time = current_time - current_process.arrival_time
                     completed_processes.append(current_process)
+                    # Record the completion time
+                    completion_times[current_process.name] = current_time
                 else:
                     queue.append(current_process)
 
@@ -116,8 +122,11 @@ def sjf(processes, run_for, output_file):
         file.write(f"Finished at time {current_time}\n\n")
 
         file.write("Results:\n")
-        for process in completed_processes:
-            file.write(f"{process.name} wait {process.response_time} turnaround {process.turnaround_time} response {process.response_time}\n")
+
+
+
+        # Call calculate_metrics function with collected data
+        calculate_metrics(hold_processes, completion_times, first_execution_times, output_file)
 
 
 def round_robin(processes, quantum, run_for, output_file):
@@ -179,7 +188,11 @@ def rr(processes, quantum, run_for, output_file):
 
 def calculate_metrics(processes, completion_times, first_execution_times, output_file):
     with open(output_file, 'a') as file:
-    
+        
+        # print(processes)
+        # print(completion_times)
+        # print(first_execution_times)
+        print(output_file)
         for process in processes:
             completion_time = completion_times[process.name]
             first_execution_time = first_execution_times[process.name]
