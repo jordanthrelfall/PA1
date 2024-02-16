@@ -63,13 +63,14 @@ def fifo(processes, run_for, output_file):
 def sjf(processes, run_for, output_file):
     current_time = 0
     queue = []
+    processes = processes.copy()
     completed_processes = []
 
     with open(output_file, "w") as file:
         file.write(f"{len(processes)} processes\n")
         file.write("Using SJF\n")
 
-        while processes or queue:
+        while run_for > current_time: #human touched this
             for process in processes[:]:
                 if process.arrival_time <= current_time:
                     file.write(f"Time {current_time:3} : {process.name} arrived\n")
