@@ -46,32 +46,24 @@ with open(inputFileCMD) as file:
         if lineSplit[0] == 'processcount':
             # sets global variable to the process count number
             processCount = int(lineSplit[1])
-            print(processCount)
         elif lineSplit[0] == 'runfor':
             # sets global variable to the run for number
             runFor = int(lineSplit[1])
-            print(runFor)
         elif lineSplit[0] == 'use':
             # sets variable for the algorithm to use
             scheduler = lineSplit[1]
-            print(scheduler)
         elif (lineSplit[0] == 'process') and (lineSplit[1] == 'name'):
             # adds all of the processes to a list
             processList.append(Process(lineSplit[2], int(lineSplit[4]), int(lineSplit[6])))
 
-    for process in processList:
-        print(process.name)
-        print(process.arrival)
-        print(process.burst)
 
-
-def simulate_fifo(processes, run_for):
+def fcfs(processes, run_for):
     current_time = 0
     queue = []
     completed_processes = []
 
     print(f"{len(processes)} processes")
-    print("Using FIFO")
+    print("Using fcfs\n")
 
     # Sort processes based on arrival time
     processes.sort(key=lambda x: x.arrival)
@@ -96,7 +88,7 @@ def simulate_fifo(processes, run_for):
                 # Check for arrivals during the execution of the process
                 for process in processes[:]:
                     if process.arrival == current_time:
-                        print(f"Time {current_time:3} : {process.name} arrived while {current_process.name} is running")
+                        print(f"Time {current_time:3} : {process.name} arrived")
                         queue.append(process)
                         processes.remove(process)
 
@@ -116,5 +108,5 @@ def simulate_fifo(processes, run_for):
 
 
 
-# Call the FIFO simulator with the process list and run time
-simulate_fifo(processList, runFor)
+# Call the fcfs simulator with the process list and run time
+simulate_fcfs(processList, runFor)
