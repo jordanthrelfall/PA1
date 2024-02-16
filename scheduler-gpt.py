@@ -61,7 +61,62 @@ def fifo(processes, run_for, output_file):
 
 
 def sjf(processes, run_for, output_file):
-    pass
+    current_time = 0
+    queue = []
+    completed_processes = []
+
+    with open(output_file, "w") as file:
+        file.write(f"{len(processes)} processes\n")
+        file.write("Using SJF\n")
+
+        while processes or queue:
+            for process in processes[:]:
+                if process.arrival_time <= current_time:
+                    file.write(f"Time {current_time:3} : {process.name} arrived\n")
+                    queue.append(process)
+                    processes.remove(process)
+
+            if queue:
+                # Sort queue based on execution time
+                queue.sort(key=lambda x: x.execution_time)
+                current_process = queue.pop(0)
+                
+                # Calculate burst time based on execution time
+                burst_time = min(current_process.execution_time, run_for - current_time)
+                
+                file.write(f"Time {current_time:3} : {current_process.name} selected (burst {burst_time})\n")
+
+                current_process.response_time = max(0, current_time - current_process.arrival_time)
+
+                while burst_time > 0:
+                    current_time += 1
+                    burst_time -= 1
+                    current_process.execution_time -= 1
+
+                    # Check for arrivals during the execution of the process
+                    for process in processes[:]:
+                        if process.arrival_time == current_time:
+                            file.write(f"Time {current_time:3} : {process.name} arrived while {current_process.name} is running\n")
+                            queue.append(process)
+                            processes.remove(process)
+
+                if current_process.execution_time == 0:
+                    file.write(f"Time {current_time:3} : {current_process.name} finished\n")
+                    current_process.turnaround_time = current_time - current_process.arrival_time
+                    completed_processes.append(current_process)
+                else:
+                    queue.append(current_process)
+
+            else:
+                file.write(f"Time {current_time:3} : Idle\n")
+                current_time += 1
+
+        file.write(f"Finished at time {current_time}\n\n")
+
+        file.write("Results:\n")
+        for process in completed_processes:
+            file.write(f"{process.name} wait {process.response_time} turnaround {process.turnaround_time} response {process.response_time}\n")
+
 
 def round_robin(processes, quantum, run_for, output_file):
     first_execution_times = {}
@@ -133,7 +188,6 @@ def calculate_metrics(processes, completion_times, first_execution_times, output
             file.write(f"{process.name} wait\t {wait_time} turnaround\t {turnaround_time} response\t {response_time}\n")
 
     #return output
-
 
 def parse_input(input_file):
     processes = []
